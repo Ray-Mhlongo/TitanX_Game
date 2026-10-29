@@ -8,10 +8,10 @@ var CONFIG = {
   PHASES: ['LOBBY', 'INTRODUCTION', 'ROUND_ONE', 'ROUND_TWO', 'ROUND_THREE', 'FINAL_DISCUSSION', 'VOTING_OPEN', 'VOTING_CLOSED', 'REVEAL', 'COMPLETED'],
   SHEETS: {
     Settings: ['key', 'value'],
-    Players: ['playerId', 'displayName', 'tokenHash', 'characterId', 'joinedAt', 'lastSeenAt', 'status', 'gameId'],
-    Characters: ['characterId', 'name', 'roleType', 'description', 'motive', 'alibi', 'privateInfo', 'knows', 'objective', 'relationship', 'assignedGameId'],
+    Players: ['playerId', 'displayName', 'gender', 'avatarId', 'tokenHash', 'characterId', 'joinedAt', 'lastSeenAt', 'status', 'gameId'],
+    Characters: ['characterId', 'name', 'roleType', 'description', 'motive', 'alibi', 'privateInfo', 'knows', 'objective', 'relationship', 'assignedGameId', 'assignmentStatus'],
     Evidence: ['clueId', 'round', 'title', 'description', 'releaseOrder', 'released', 'hostNote', 'gameId'],
-    Votes: ['gameId', 'playerId', 'suspectId', 'submittedAt'],
+    Votes: ['gameId', 'roundId', 'playerId', 'targetPlayerId', 'suspectId', 'submittedAt', 'lastUpdatedAt'],
     GameLog: ['timestamp', 'gameId', 'event', 'details'],
     GameHistory: ['gameId', 'completedAt', 'actualCulprit', 'winningAccusation', 'voteTotals', 'correctAccusation']
   }

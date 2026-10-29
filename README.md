@@ -85,3 +85,13 @@ The tests cover unique character selection, culprit selection, session lookup, v
 ## GitHub workflow
 
 Commit and push only source and documentation. Do not push credentials, `.clasp.json`, `.clasprc.json`, host secrets, spreadsheet IDs or user data. Update the Apps Script deployment after each source change from the deployment manager; `clasp push` synchronises source but does not itself publish a new web app version.
+
+## Voting and elimination
+
+The shared deployment URL is the only player link. Players register with a display name and avatar preference (Male, Female, or Prefer not to say); the server assigns an unused fictional character under a script lock. The avatar preference only selects local pumpkin artwork. A random browser token recovers the player's existing character after refresh; Sheets stores only its digest.
+
+The host opens voting from the dashboard and chooses 30, 60, 90, 120 seconds, or a custom 10–600 second duration. Auto close is enabled by default. When disabled, an expired timer leaves the poll open until the host closes or extends it. The backend checks the deadline on ballot submission. Players choose an active suspect card and can change their ballot only when the host setting permits it. The host sees participation counts while voting is open; individual selections are never returned.
+
+After closing, the host reveals aggregate results. A unique highest vote can be explicitly confirmed for elimination. Ties and empty ballots offer runoff/reopen/skip controls; a runoff contains only the tied active suspects. Eliminated players remain in the roster and can follow public evidence, but cannot vote or appear in future polls. If the killer is eliminated, the public solution is revealed. The host can also reveal it manually.
+
+`setupDatabase_()` migrates existing sheet columns by their header names and retains existing rows. Player records now include gender/avatar fields and uppercase `ACTIVE` / `ELIMINATED` status; Votes is round scoped. Keep the spreadsheet private. Presentation mode uses the public endpoint and excludes character secrets, unreleased evidence, individual votes, and the host solution.

@@ -90,4 +90,34 @@ test('unique selection prevents duplicate roles when registrations are serialize
   for(let i=0;i<cards.length;i++){const free=cards.filter(c=>!assigned.includes(c.id));assigned.push(logic.chooseUnique(free,1,()=>0)[0].id);}
   assert.equal(new Set(assigned).size,3);
 });
+test('avatar preference changes only the visual avatar identifier', () => {
+  assert.equal(logic.avatarId('Male'),'pumpkin-male');
+  assert.equal(logic.avatarId('Female'),'pumpkin-female');
+  assert.equal(logic.avatarId('Prefer not to say'),'pumpkin-neutral');
+  const characters=logic.chooseUnique(sandbox.CHARACTERS,3,()=>0.2);
+  assert.deepEqual(characters.map(c=>c.id),logic.chooseUnique(sandbox.CHARACTERS,3,()=>0.2).map(c=>c.id));
+});
+test('auto-close deadline is enforced only when enabled', () => {
+  assert.equal(logic.deadlinePassed('VOTING_OPEN',true,1000,1001),true);
+  assert.equal(logic.deadlinePassed('VOTING_OPEN',false,1000,1001),false);
+  assert.equal(logic.deadlinePassed('VOTING_CLOSED',true,1000,1001),false);
+});
+test('tied and empty results never nominate an elimination', () => {
+  assert.equal(logic.eliminationDecision([{suspectId:'a'},{suspectId:'b'}],['a','b']).reason,'tie');
+  assert.equal(logic.eliminationDecision([],['a','b']).reason,'empty');
+});
+test('elimination accepts only a unique active highest-vote character', () => {
+  assert.deepEqual(JSON.parse(JSON.stringify(logic.eliminationDecision([{suspectId:'a'},{suspectId:'a'},{suspectId:'b'}],['a','b']))),{ok:true,characterId:'a',leaders:['a']});
+  assert.equal(logic.eliminationDecision([{suspectId:'a'}],['b']).reason,'inactive');
+});
+test('eliminated player and target are excluded by the authoritative roster', () => {
+  const active=[{id:'a'},{id:'c'}];
+  assert.equal(logic.voteDecision('VOTING_OPEN',{characterId:'b'},'a',active,null,true),'');
+  assert.match(logic.voteDecision('VOTING_OPEN',{characterId:'b'},'b',active,null,true),/valid suspect/);
+  assert.match(logic.voteDecision('VOTING_OPEN',null,'a',active,null,true),/session/);
+});
+test('round-scoped ballot totals do not merge old rounds', () => {
+  const all=[{roundId:'1',suspectId:'a'},{roundId:'1',suspectId:'a'},{roundId:'2',suspectId:'b'}];
+  assert.deepEqual(JSON.parse(JSON.stringify(logic.tally(all.filter(v=>v.roundId==='2')).totals)),{b:1});
+});
 console.log(`\n${passed} game logic checks passed.`);

@@ -11,7 +11,7 @@ function createGame(hostToken, maxPlayers) {
       rewriteRows_('Players',GameLogic.resetRows(rows_('Players'),previous.gameId));
       rewriteRows_('Votes',GameLogic.resetRows(rows_('Votes'),previous.gameId));
       rewriteRows_('Evidence',GameLogic.resetRows(rows_('Evidence'),previous.gameId));
-      var charactersSheet=db_().getSheetByName('Characters');if(charactersSheet.getLastRow()>1)charactersSheet.getRange(2,11,charactersSheet.getLastRow()-1,1).clearContent();
+      CHARACTERS.forEach(function(c){setCharacterAssignment_(c.id,'');});
       log_(id,'game_created','New lobby opened.');return {ok:true,data:hostState_(state)};
     }finally{lock.releaseLock();}
   }catch(e){return {ok:false,error:safeError_(e)};}
@@ -22,9 +22,9 @@ function saveHistory_(state) {
 }
 function transitionGame(hostToken,nextPhase) {
   try {requireHost_(hostToken);var lock=LockService.getScriptLock();lock.waitLock(20000);try{
-    var state=JSON.parse(settingGet_('state')||'{}');if(!GameLogic.allowedTransition(state.phase,nextPhase))return {ok:false,error:'That phase transition is not available.'};
+    var state=JSON.parse(settingGet_('state')||'{}');if(nextPhase==='VOTING_OPEN'||nextPhase==='VOTING_CLOSED')return {ok:false,error:'Use the voting controls to manage a poll.'};if(!GameLogic.allowedTransition(state.phase,nextPhase))return {ok:false,error:'That phase transition is not available.'};
     if(nextPhase==='INTRODUCTION'){
-      var players=rows_('Players').filter(function(p){return p.gameId===state.gameId&&p.status==='active';});
+      var players=rows_('Players').filter(function(p){return p.gameId===state.gameId&&isActivePlayer_(p);});
       if(players.length<CONFIG.MIN_PLAYERS)return {ok:false,error:'At least '+CONFIG.MIN_PLAYERS+' players must join before the game starts.'};
       state.registrationOpen=false;state.startedAt=now_();state.killerId=GameLogic.selectKiller(players,Math.random);
       setupEvidence_(state);log_(state.gameId,'game_started','Mystery began.');
@@ -62,23 +62,24 @@ function hostSetSettings(hostToken, settings) {
 function resetGame(hostToken) {return createGame(hostToken,Number(settingGet_('playerLimit')||CONFIG.DEFAULT_MAX_PLAYERS));}
 function hostSolution_(state) {
   var c=CHARACTERS.filter(function(x){return x.id===state.killerId;})[0];if(!c)return null;
-  var votes=rows_('Votes').filter(function(v){return v.gameId===state.gameId;}), result=GameLogic.tally(votes);
+  var votes=rows_('Votes').filter(function(v){return v.gameId===state.gameId&&String(v.roundId)===String(state.votingRound||1);}), result=GameLogic.tally(votes);
   var solution={culpritId:c.id,culprit:c.name,motive:c.motive,timeline:STORY.solution.timeline,decisive:'The portrait matches '+CHARACTER_MARKS[c.id]+', this guest’s public costume detail. The garden route and matching metallic green paint confirm the timeline; the torn note echoes this character’s public motive.',redHerrings:STORY.solution.redHerrings};
   if(GameLogic.voteResultsAllowed(state.phase)){solution.voteTotals=result.totals;solution.winningAccusation=result.winningAccusation;solution.tie=result.tie;solution.correctAccusation=result.winningAccusation===c.id;}
   return solution;
 }
 function hostState_(state) {
-  var players=rows_('Players').filter(function(p){return p.gameId===state.gameId&&p.status==='active';}).map(function(p){var c=CHARACTERS.filter(function(x){return x.id===p.characterId;})[0];return {id:p.playerId,name:p.displayName,character:c?c.name:'',joinedAt:p.joinedAt};});
-  var votes=rows_('Votes').filter(function(v){return v.gameId===state.gameId;}), data={gameId:state.gameId,phase:state.phase,phaseStartedAt:state.phaseStartedAt,durationSeconds:Number(state.durationSeconds||180),startedAt:state.startedAt,registrationOpen:state.registrationOpen,playerLimit:Number(settingGet_('playerLimit')||CONFIG.DEFAULT_MAX_PLAYERS),playerCount:players.length,players:players,voteCount:votes.length,characterCount:CHARACTERS.length,characters:players.map(function(p){var c=CHARACTERS.filter(function(x){return x.id===p.characterId;})[0];return c?{id:c.id,name:c.name,role:c.role,description:c.description,motive:c.motive,alibi:c.alibi,mark:CHARACTER_MARKS[c.id]}:null;}).filter(Boolean),evidence:rows_('Evidence').filter(function(e){return e.gameId===state.gameId;}).sort(function(a,b){return Number(a.releaseOrder)-Number(b.releaseOrder);}).map(function(e){return {id:e.clueId,round:e.round,title:e.title,released:String(e.released)==='true',hostNote:e.hostNote};}),solution:hostSolution_(state),publicUrl:ScriptApp.getService().getUrl()||''};
-  if(GameLogic.voteResultsAllowed(state.phase))data.voteTotals=GameLogic.tally(votes).totals;
+  var allPlayers=rows_('Players').filter(function(p){return p.gameId===state.gameId;}),players=allPlayers.filter(isActivePlayer_).map(function(p){var c=CHARACTERS.filter(function(x){return x.id===p.characterId;})[0];return {id:p.playerId,name:p.displayName,character:c?c.name:'',characterId:p.characterId,avatarId:p.avatarId||avatarIdForGender_(p.gender),status:p.status,joinedAt:p.joinedAt};});
+  var eliminated=allPlayers.filter(function(p){return p.status==='ELIMINATED';}).map(function(p){var c=CHARACTERS.filter(function(x){return x.id===p.characterId;})[0];return {id:p.playerId,name:p.displayName,character:c?c.name:'',characterId:p.characterId,avatarId:p.avatarId||avatarIdForGender_(p.gender),status:p.status,joinedAt:p.joinedAt};});
+  var votes=rows_('Votes').filter(function(v){return v.gameId===state.gameId&&String(v.roundId)===String(state.votingRound||1);}),data={gameId:state.gameId,phase:state.phase,phaseStartedAt:state.phaseStartedAt,durationSeconds:Number(state.durationSeconds||60),votingDeadline:state.votingDeadline||'',autoClose:state.autoClose!==false,resultsRevealed:!!state.resultsRevealed,runoffCharacterIds:state.runoffCharacterIds||[],eliminationAnnouncement:state.eliminationAnnouncement||'',votingRound:Number(state.votingRound||0),startedAt:state.startedAt,registrationOpen:state.registrationOpen,playerLimit:Number(settingGet_('playerLimit')||CONFIG.DEFAULT_MAX_PLAYERS),playerCount:players.length,eligibleCount:players.length,players:players.concat(eliminated),voteCount:votes.length,characterCount:CHARACTERS.length,characters:players.concat(eliminated).map(function(p){var c=CHARACTERS.filter(function(x){return x.id===p.characterId;})[0];return c?{id:c.id,name:c.name,role:c.role,description:c.description,avatarId:p.avatarId,status:p.status,mark:CHARACTER_MARKS[c.id]}:null;}).filter(Boolean),evidence:rows_('Evidence').filter(function(e){return e.gameId===state.gameId;}).sort(function(a,b){return Number(a.releaseOrder)-Number(b.releaseOrder);}).map(function(e){return {id:e.clueId,round:e.round,title:e.title,released:String(e.released)==='true',hostNote:e.hostNote};}),solution:hostSolution_(state),publicUrl:ScriptApp.getService().getUrl()||''};
+  if(GameLogic.voteResultsAllowed(state.phase)&&state.resultsRevealed)data.voteTotals=GameLogic.tally(votes).totals;
   return data;
 }
 function getHostDashboardState(hostToken) {try{requireHost_(hostToken);var state=JSON.parse(settingGet_('state')||'{}');return {ok:true,data:hostState_(state)};}catch(e){return {ok:false,error:safeError_(e)};}}
 function getPublicGameState(playerToken) {
-  try {var state=JSON.parse(settingGet_('state')||'{}'), player=null;if(playerToken){var h=digest_(playerToken);player=rows_('Players').filter(function(p){return p.tokenHash===h&&p.gameId===state.gameId&&p.status==='active';})[0]||null;}
+  try {var state=JSON.parse(settingGet_('state')||'{}');if(state.phase==='VOTING_OPEN'&&state.autoClose&&state.votingDeadline&&Date.now()>=Date.parse(state.votingDeadline)){var lock=LockService.getScriptLock();lock.waitLock(20000);try{state=JSON.parse(settingGet_('state')||'{}');if(state.phase==='VOTING_OPEN'&&state.autoClose&&Date.now()>=Date.parse(state.votingDeadline)){state.phase='VOTING_CLOSED';state.votingDeadline='';settingSet_('state',JSON.stringify(state));log_(state.gameId,'voting_closed','Deadline reached.');}}finally{lock.releaseLock();}}var player=null;if(playerToken){var h=digest_(playerToken);player=rows_('Players').filter(function(p){return p.tokenHash===h&&p.gameId===state.gameId&&['ACTIVE','ELIMINATED'].indexOf(p.status)>=0;})[0]||null;}
     var data=publicState_(state,player);
-    if(GameLogic.voteResultsAllowed(state.phase)){var votes=rows_('Votes').filter(function(v){return v.gameId===state.gameId;}), tally=GameLogic.tally(votes);data.voteTotals=tally.totals;data.voteTie=tally.tie;data.winningAccusation=tally.winningAccusation;}
-    if(state.phase==='REVEAL'||state.phase==='COMPLETED')data.reveal=hostSolution_(state);
+    if(GameLogic.voteResultsAllowed(state.phase)&&state.resultsRevealed){var votes=rows_('Votes').filter(function(v){return v.gameId===state.gameId&&String(v.roundId)===String(state.votingRound||1);}), tally=GameLogic.tally(votes);data.voteTotals=tally.totals;data.voteTie=tally.tie;data.winningAccusation=tally.winningAccusation;}
+    if(state.solutionRevealed)data.reveal=hostSolution_(state);
     return {ok:true,data:data};
   }catch(e){return {ok:false,error:safeError_(e)};}
 }

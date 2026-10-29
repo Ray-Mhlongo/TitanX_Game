@@ -54,8 +54,24 @@ The host's **Reset / replay game** action clears active players, ballots and clu
 - Attempt a host operation without a host session and confirm it is rejected.
 - Release clues one at a time and confirm they remain available after refresh.
 - Attempt a vote before voting opens, for a non-player suspect, twice with vote changes disabled, and after voting closes; all must fail. Enable changes and confirm the existing ballot updates rather than duplicating.
-- While voting is open, inspect player and host responses; only aggregate participation count should be visible. Close voting and confirm totals appear. Confirm ties are shown as inconclusive.
-- Confirm the public presentation hides the solution through VOTING_CLOSED and displays it only after REVEAL.
+- While voting is open, inspect player and host responses; only aggregate participation count should be visible. Close voting, select Reveal Results, and confirm only aggregate totals appear. Confirm tied and empty polls cannot eliminate anyone.
+- Confirm the public presentation hides the solution until the host manually reveals it or the killer is eliminated.
 - Revoke a player and confirm their old token no longer retrieves a card or submits a vote.
 - Reset and confirm active rows are cleared while prior GameHistory entries remain.
 - Repeat registration from multiple devices at once to exercise `LockService` uniqueness.
+
+## 8. Updated registration, voting, and elimination flow
+
+Players all open the same deployed URL and enter a display name plus an avatar preference. The preference selects only a locally rendered pumpkin avatar; it is not used to choose the character or killer. Returning browsers submit their random stored session token and recover the same card, including after registration closes. Never use a display name as an account-recovery credential.
+
+The Players schema includes `gender`, `avatarId`, `tokenHash`, character assignment, `ACTIVE` / `ELIMINATED` status, and timestamps. Characters retain stable IDs and assignment status. Votes now include `roundId`, voter ID, target player ID, character ID, submitted time, and last update time. The setup migration maps old columns by header name and preserves existing rows. After deploying, run `setupDatabase_()` once from the editor to migrate the bound Sheet.
+
+In the host console, choose a preset (30, 60, 90, or 120 seconds) or custom duration, set auto close, and open voting. The server enforces the deadline if auto close is enabled. With auto close disabled, expiry shows `EXPIRED` and voting stays open until the host acts. The host can close immediately or extend by 30 seconds. Players select a suspect card with the player's avatar, fictional character name, and public description. Ballots are private and round scoped.
+
+After close, select **Reveal Results** to show aggregate totals. Confirm a unique top vote getter explicitly to eliminate that player. A tie presents only tied characters for a runoff, or the host can reopen voting or skip. Empty ballots can be reopened or skipped. Eliminated users remain in the roster and can view public evidence, but are excluded from voter and suspect eligibility on subsequent polls. The killer's elimination ends the game and reveals the solution; the host also has a manual solution reveal control.
+
+## 9. Cross-device test checklist
+
+Use the same web app URL on at least four separate browsers or phones. Register different names and avatar preferences, refresh one device, and verify its original card is restored. Confirm each assigned character is unique and avatar choice did not alter the assignment. As host, open a short auto-closing poll and test a post-deadline submission; repeat with auto close disabled and confirm the expired poll still accepts ballots. Close, reveal, and test unique winner, tie, empty poll, runoff, reopen, skip, and confirmed elimination. Attempt to vote from an eliminated browser and target an eliminated character. Confirm a public/presentation session never receives secrets, token hashes, individual ballots, or unrevealed solution data.
+
+Local logic checks cover deterministic rules, but Apps Script sheet permissions, lock contention, anonymous access and live simultaneous clients require this manual test against the actual deployment. Apps Script cannot be executed locally in this repository.

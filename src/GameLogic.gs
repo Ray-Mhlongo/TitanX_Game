@@ -28,7 +28,10 @@ var GameLogic = (function () {
   function voteDecision(phase,player,suspectId,characters,existing,allowChanges){if(phase!=='VOTING_OPEN')return 'Voting is not open.';if(!player)return 'Your private player session is not active.';if(!characters.some(function(c){return c.id===suspectId;})||suspectId===player.characterId)return 'Choose a valid suspect other than yourself.';if(existing&&!allowChanges)return 'Your vote has already been recorded.';return '';}
   function revealAllowed(phase){return phase==='REVEAL'||phase==='COMPLETED';}
   function voteResultsAllowed(phase){return phase==='VOTING_CLOSED'||phase==='REVEAL'||phase==='COMPLETED';}
+  function deadlinePassed(phase,autoClose,deadline,now){return phase==='VOTING_OPEN'&&autoClose&&!!deadline&&Number(now)>=Number(deadline);}
+  function eliminationDecision(votes,activeCharacterIds){var result=tally(votes);if(!result.winningAccusation)return {ok:false,reason:result.tie?'tie':'empty',leaders:result.leaders};if(activeCharacterIds.indexOf(result.winningAccusation)<0)return {ok:false,reason:'inactive',leaders:result.leaders};return {ok:true,characterId:result.winningAccusation,leaders:result.leaders};}
+  function avatarId(gender){return gender==='Male'?'pumpkin-male':gender==='Female'?'pumpkin-female':'pumpkin-neutral';}
   function resetRows(rows,previousGameId){return rows.filter(function(r){return r.gameId!==previousGameId;});}
   function validHostSession(token,cachedValue){return !!token&&cachedValue==='1';}
-  return {allowedTransition:allowedTransition, chooseUnique:chooseUnique, tally:tally, selectKiller:selectKiller, existingPlayer:existingPlayer, voteDecision:voteDecision, revealAllowed:revealAllowed, voteResultsAllowed:voteResultsAllowed, resetRows:resetRows, validHostSession:validHostSession};
+  return {allowedTransition:allowedTransition, chooseUnique:chooseUnique, tally:tally, selectKiller:selectKiller, existingPlayer:existingPlayer, voteDecision:voteDecision, revealAllowed:revealAllowed, voteResultsAllowed:voteResultsAllowed, deadlinePassed:deadlinePassed, eliminationDecision:eliminationDecision, avatarId:avatarId, resetRows:resetRows, validHostSession:validHostSession};
 }());

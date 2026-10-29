@@ -43,3 +43,11 @@ Each phase transition is controlled by the host; the on-screen timer is a pacing
 - A tied or empty ballot is inconclusive. Explain the actual culprit separately during the reveal.
 - The host can revoke a lost player session from the roster. Ask that player to rejoin with a distinct name.
 - Reset / replay clears the active game. Completed results are saved to GameHistory.
+
+## Voting and elimination
+
+Choose 30, 60, 90, or 120 seconds, or enter a custom duration in the host console. Auto close is enabled by default; with it disabled, an expired timer leaves voting open until you close or extend the poll. Players use avatar and character cards to select a suspect. They can change a submitted ballot only when vote changes are enabled.
+
+The host sees participation counts while the poll is open, then reveals aggregate results after closing. Explicitly confirm a unique leading suspect to eliminate them. A tie never eliminates anyone automatically: open a runoff with the tied active suspects, reopen voting after discussion, or skip. Empty ballots can be reopened or skipped. Eliminated players stay in the public roster and can see released evidence, but are excluded from all subsequent voting and suspect lists. If the killer is eliminated, the game reveals the solution; the host may also reveal the solution manually.
+
+Avatar preference affects only the locally drawn pumpkin profile image. It does not influence character assignment, killer selection, or game rules.
