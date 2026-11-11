@@ -4,9 +4,39 @@ function db_() {
   return SpreadsheetApp.openById(id);
 }
 function setupDatabase_() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  if (!ss) throw new Error('Open this script from the dedicated game spreadsheet, then run setupDatabase_.');
-  PropertiesService.getScriptProperties().setProperty('TITANX_SPREADSHEET_ID', ss.getId());
+  var lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    var id = PropertiesService.getScriptProperties().getProperty('TITANX_SPREADSHEET_ID');
+    if (!id) throw new Error('Game database is not configured. Run setupDatabaseWithId_(spreadsheetId) from the Apps Script editor first.');
+    var ss = openDatabaseSpreadsheet_(id);
+    return initialiseDatabase_(ss);
+  } finally {
+    lock.releaseLock();
+  }
+}
+function setupDatabaseWithId_(spreadsheetId) {
+  var id = String(spreadsheetId || '').trim();
+  if (!id) throw new Error('Provide a Google spreadsheet ID, then run setupDatabaseWithId_(spreadsheetId) again.');
+  var lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    // Verify access before writing configuration. The ID is stored only in Script Properties.
+    var ss = openDatabaseSpreadsheet_(id);
+    PropertiesService.getScriptProperties().setProperty('TITANX_SPREADSHEET_ID', id);
+    return initialiseDatabase_(ss);
+  } finally {
+    lock.releaseLock();
+  }
+}
+function openDatabaseSpreadsheet_(id) {
+  try {
+    return SpreadsheetApp.openById(id);
+  } catch (e) {
+    throw new Error('Unable to open the configured game spreadsheet. Check that the spreadsheet ID is correct and that this Apps Script project has access.');
+  }
+}
+function initialiseDatabase_(ss) {
   Object.keys(CONFIG.SHEETS).forEach(function (name) {
     var sheet = ss.getSheetByName(name) || ss.insertSheet(name);
     var headers = CONFIG.SHEETS[name];

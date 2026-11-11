@@ -1,14 +1,18 @@
+> **Pages migration status (6 November 2026):** Apps Script source is synchronized and Version 10 of the bridge is live on the existing deployment. Anonymous bridge GET and a signed POST request to the public presentation function returned the expected safe projection. The new Pages frontend is still local and has not been published; full browser postMessage delivery from the updated Pages UI remains unverified. Do not share the Pages link as playable until GitHub Pages is updated and that browser integration is confirmed.
+
 # Who Killed the Pumpkin?
 
-**A TitanX Halloween Mystery** — a browser based multiplayer murder mystery for a 15–20 minute Google Meet session. Players join through one shared URL, receive private server assigned characters, investigate released clues and cast private votes. A host runs the game from the same app's protected dashboard.
+> **Current release:** Version 10 of the Apps Script backend is live at the [existing participant URL](https://script.google.com/macros/s/AKfycbwYFo3N5_gXIkZpSUeio5UrMUaH5W5DTQZAAkYmz6PBy3_K4cMYSlOhb7tQhS_lu7F8/exec). The GitHub Pages frontend and bridge client files are local only; GitHub has not been pushed. See [the deployment guide](docs/deployment.md).
 
-The “murder” is the destruction of a fictional pumpkin. All characters and motives are fictional.
+**A TitanX Halloween Mystery** â€” a browser based multiplayer murder mystery for a 15â€“20 minute Google Meet session. Players join through one shared URL, receive private server assigned characters, investigate released clues and cast private votes. A host runs the game from the same app's protected dashboard.
+
+The â€œmurderâ€ is the destruction of a fictional pumpkin. All characters and motives are fictional.
 
 ## Architecture
 
-- Google Apps Script serves the HTML Service page and handles every sensitive action through `google.script.run`.
+- GitHub Pages serves the static frontend from the repository root. A narrowly allowlisted Apps Script HTML Service bridge forwards form-encoded API requests to existing server functions and returns results through postMessage; authorization, validation, locking and deadlines remain server-side.
 - A private Google Sheet stores settings, players, characters, evidence, votes, game events and completed results.
-- Vanilla HTML, CSS and JavaScript provide the responsive player, host and presentation views. There is no build step or runtime asset service.
+- Vanilla HTML, CSS and JavaScript provide the responsive player, host and presentation views under index.html, host.html, presentation.html and assets/. No build step is required.
 - GitHub stores source. `clasp` can synchronise `src/` to an Apps Script project.
 - The server assigns unique characters while holding `LockService`, keeps session token hashes in Sheets, and stores host sessions in a six hour script cache.
 - The selected killer is one of the registered players and is selected once when the mystery starts. The role is returned only in that player's authenticated character response. Killer specific final evidence is generated on the server.
@@ -17,8 +21,16 @@ The “murder” is the destruction of a fictional pumpkin. All characters and m
 ## Project files
 
 ```text
+index.html              GitHub Pages participant frontend
+host.html               GitHub Pages host frontend
+presentation.html       GitHub Pages presentation frontend
+assets/css/game.css     Shared static styles
+assets/js/client.js     Player and host frontend logic
+assets/js/presentation.js Public presentation logic
+assets/js/api.js        Apps Script iframe bridge client
 src/                    Apps Script source (clasp root)
-  Code.gs               HTML Service entry point
+  Code.gs               HTML Service routes and backend bridge
+  Bridge.html           Origin-checked, allowlisted API message bridge
   Config.gs             Sheet schemas and game settings
   Database.gs           Spreadsheet setup and data helpers
   Authentication.gs     Host secret and host sessions
@@ -28,41 +40,45 @@ src/                    Apps Script source (clasp root)
   ClueService.gs        Player safe state and released evidence
   VotingService.gs      Private ballot validation and storage
   GameData.gs           Fictional cast, story and clue blueprint
-  Index.html            Main player, host and presentation page
-  Styles.html           Local CSS artwork and responsive styles
-  Client.html           Browser interaction and polling
-tests/                  Node-based tests for pure game rules
-docs/                   Deployment and game master instructions
-.clasp.json.example     Safe template; copy to .clasp.json locally
+  Index.html            Apps Script player page (legacy/fallback)
+  Host.html             Apps Script host page (legacy/fallback)
+  Presentation.html     Apps Script presentation page (legacy/fallback)
 ```
 
 ## Setup and deployment
 
+The root [GitHub Pages site](https://ray-mhlongo.github.io/TitanX_Game/) is intended to serve the static frontend. The pages communicate with the existing Apps Script backend through an origin-checked HTML Service iframe bridge; they do not execute Apps Script code themselves. This migration is still local-only and must be synchronized/deployed and published before Pages can be used to play.
+
 See [deployment.md](docs/deployment.md) for the full owner checklist. In brief:
 
-1. Create a dedicated Google Sheet and open **Extensions → Apps Script**.
-2. Add/synchronise the files in `src/` to that bound Apps Script project. With clasp, install and authenticate clasp on your own computer, copy `.clasp.json.example` to `.clasp.json`, fill in the script ID, then run `clasp push` from the repository root. `.clasp.json` is ignored by Git.
-3. In the Apps Script editor, run `setupDatabase_()` and approve the spreadsheet access request. Then run `configureInitialHost_()`. Copy its one time host secret from the execution log; the script stores only a salted SHA-256 digest.
-4. Deploy as a web app that executes as the sheet owner. For anonymous meeting participants, choose the broadest access option your Google account and Workspace administrator allow. Google may require sign-in or restrict “Anyone” deployment; test with a signed-out browser and the actual participant devices.
-5. Open the deployment URL, sign in to the host dashboard, create a game, and share that same URL in the Meet chat. Players use it on their own devices.
+1. Create a dedicated Google Sheet and keep it private. This project is a standalone Apps Script project, separate from the Sheet.
+2. Add/synchronise the files in `src/` to the existing Apps Script project. With clasp, install and authenticate clasp on your own computer, copy `.clasp.json.example` to `.clasp.json`, fill in the script ID, then run `clasp push` from the repository root. `.clasp.json` is ignored by Git.
+3. The supplied standalone Sheet was initialized already, and the owner has rotated the previously exposed host secret. The editor-only wrapper functions are removed from the deployed source. Store the new secret privately; never place it in source, documentation, or chat.
+4. Deploy as a web app that executes as the sheet owner. For anonymous meeting participants, choose the broadest access option your Google account and Workspace administrator allow. Google may require sign-in or restrict â€œAnyoneâ€ deployment; test with a signed-out browser and the actual participant devices.
+5. After the secured release is published, use the base `/exec` URL for players, `/exec?host=1` for the private host portal, and `/exec?presentation=1` for the screen shared in Meet. Keep the host view on your private monitor.
 
 The spreadsheet ID is stored in Apps Script Script Properties, not in the browser or repository. Keep the spreadsheet private; players should never be shared on it. Never commit `.clasp.json`, `.clasprc.json`, deployment URLs containing private parameters, host secrets or tokens.
 
 ## Running a game
 
-The host creates a lobby, sets a 4–31 player cap, waits for at least four players, and advances each phase in order. Evidence is released manually. Players discuss in Meet and vote privately in the app. The host closes voting and reveals the solution. The presentation view is available from the dashboard for screen sharing; it contains no private player cards or pre-reveal solution.
+The host creates a lobby, sets a 4â€“31 player cap, waits for at least four players, and advances each phase in order. Evidence is released manually. Players discuss in Meet and vote privately in the app. The host closes voting and reveals the solution. The presentation view is available from the dashboard for screen sharing; it contains no private player cards or pre-reveal solution.
 
 See [game_master_guide.md](docs/game_master_guide.md) for the 20 minute run sheet and checklist.
 
 ## Local development and tests
 
-The deployed app needs no Node.js, package manager, or build. Node is used only for the pure game logic tests:
+The deployed app needs no Node.js, package manager, or build. Run the local checks with Node:
 
 ```sh
 node tests/game_logic_tests.js
+node tests/database_setup_tests.js
+node tests/authentication_tests.js
+node tests/presentation_privacy_tests.js
+node tests/route_tests.js
+node tests/bridge_api_tests.js
 ```
 
-The tests cover unique character selection, culprit selection, session lookup, voting rules, tally privacy, reveal gating, legal phases and reset behavior. Apps Script services (Sheets, locks, cache, deployment permissions and concurrent requests) require a manual integration check in the owner's Google account; see the deployment guide. No local test can prove the actual web app's anonymous access mode.
+The local suite covers game rules, database setup, host authentication and presentation privacy. Apps Script services (live Sheets, locks, cache, deployment permissions and concurrent requests) still require verification against the deployed release; see the deployment guide. No local test proves anonymous access or a live multiplayer session.
 
 ## Security and privacy
 
@@ -84,13 +100,13 @@ The tests cover unique character selection, culprit selection, session lookup, v
 
 ## GitHub workflow
 
-Commit and push only source and documentation. Do not push credentials, `.clasp.json`, `.clasprc.json`, host secrets, spreadsheet IDs or user data. Update the Apps Script deployment after each source change from the deployment manager; `clasp push` synchronises source but does not itself publish a new web app version.
+For a future authorized release, publish only source and documentation; never publish credentials, `.clasp.json`, `.clasprc.json`, host secrets, spreadsheet IDs or user data. Synchronize Apps Script separately and publish a versioned web app deployment. GitHub was not pushed for this migration.
 
 ## Voting and elimination
 
-The shared deployment URL is the only player link. Players register with a display name and avatar preference (Male, Female, or Prefer not to say); the server assigns an unused fictional character under a script lock. The avatar preference only selects local pumpkin artwork. A random browser token recovers the player's existing character after refresh; Sheets stores only its digest.
+After both staged releases have been published, the Pages root URL is the participant link. Players register with a display name and choose Male or Female for the pumpkin avatar; the server assigns an unused fictional character under a script lock. The avatar preference only selects local pumpkin artwork. A random browser token recovers the player's existing character after refresh; Sheets stores only its digest.
 
-The host opens voting from the dashboard and chooses 30, 60, 90, 120 seconds, or a custom 10–600 second duration. Auto close is enabled by default. When disabled, an expired timer leaves the poll open until the host closes or extends it. The backend checks the deadline on ballot submission. Players choose an active suspect card and can change their ballot only when the host setting permits it. The host sees participation counts while voting is open; individual selections are never returned.
+The host opens voting from the dashboard and chooses 30, 60, 90, 120 seconds, or a custom 10â€“600 second duration. Auto close is enabled by default. When disabled, an expired timer leaves the poll open until the host closes or extends it. The backend checks the deadline on ballot submission. Players choose an active suspect card and can change their ballot only when the host setting permits it. The host sees participation counts while voting is open; individual selections are never returned.
 
 After closing, the host reveals aggregate results. A unique highest vote can be explicitly confirmed for elimination. Ties and empty ballots offer runoff/reopen/skip controls; a runoff contains only the tied active suspects. Eliminated players remain in the roster and can follow public evidence, but cannot vote or appear in future polls. If the killer is eliminated, the public solution is revealed. The host can also reveal it manually.
 

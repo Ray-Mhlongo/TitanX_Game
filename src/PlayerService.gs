@@ -1,13 +1,14 @@
 function registerPlayer(displayName, gender, existingToken) {
   try {
     var name=String(displayName||'').trim().replace(/\s+/g,' ');
-    gender=['Male','Female','Prefer not to say'].indexOf(gender)>=0?gender:'Prefer not to say';
+    gender=gender==='Male'||gender==='Female'?gender:'';
     if(name.length<2||name.length>32) return {ok:false,error:'Enter a name between 2 and 32 characters.'};
     var lock=LockService.getScriptLock(); lock.waitLock(20000);
     try {
       var state=JSON.parse(settingGet_('state')||'{}');
       var players=rows_('Players'), tokenHash=existingToken?digest_(existingToken):'';
       if(tokenHash){var returning=players.filter(function(p){return p.tokenHash===tokenHash&&p.gameId===state.gameId&&['ACTIVE','ELIMINATED'].indexOf(p.status)>=0;})[0]; if(returning){returning.lastSeenAt=now_();rewriteRows_('Players',players);return {ok:true,token:existingToken,character:characterCard_(returning,state)};}}
+      if(!gender)return {ok:false,error:'Select Male or Female to continue.'};
       if(state.phase!=='LOBBY'||!state.registrationOpen) return {ok:false,error:'Registration is closed for this game.'};
       if(players.some(function(p){return p.gameId===state.gameId&&isActivePlayer_(p)&&p.displayName.toLowerCase()===name.toLowerCase();})) return {ok:false,error:'That name is already in the room. Choose another display name.'};
       var limit=Number(settingGet_('playerLimit')||CONFIG.DEFAULT_MAX_PLAYERS), active=players.filter(function(p){return p.gameId===state.gameId&&isActivePlayer_(p);});

@@ -32,6 +32,6 @@ var GameLogic = (function () {
   function eliminationDecision(votes,activeCharacterIds){var result=tally(votes);if(!result.winningAccusation)return {ok:false,reason:result.tie?'tie':'empty',leaders:result.leaders};if(activeCharacterIds.indexOf(result.winningAccusation)<0)return {ok:false,reason:'inactive',leaders:result.leaders};return {ok:true,characterId:result.winningAccusation,leaders:result.leaders};}
   function avatarId(gender){return gender==='Male'?'pumpkin-male':gender==='Female'?'pumpkin-female':'pumpkin-neutral';}
   function resetRows(rows,previousGameId){return rows.filter(function(r){return r.gameId!==previousGameId;});}
-  function validHostSession(token,cachedValue){return !!token&&cachedValue==='1';}
+  function validHostSession(token,cachedValue,expectedVersion){return !!token&&!!cachedValue&&cachedValue===(expectedVersion||'1');}
   return {allowedTransition:allowedTransition, chooseUnique:chooseUnique, tally:tally, selectKiller:selectKiller, existingPlayer:existingPlayer, voteDecision:voteDecision, revealAllowed:revealAllowed, voteResultsAllowed:voteResultsAllowed, deadlinePassed:deadlinePassed, eliminationDecision:eliminationDecision, avatarId:avatarId, resetRows:resetRows, validHostSession:validHostSession};
 }());
