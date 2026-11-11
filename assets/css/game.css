@@ -43,6 +43,10 @@ footer{border-top-color:#fe772d3d}
 .player-station #vote-panel.hidden{display:block!important;min-height:110px;border-color:#fe772d66}
 .player-station #vote-panel.hidden:before{content:'INVESTIGATION IN PROGRESS';display:block;color:#ffc27e;font:11px 'DM Mono',monospace;letter-spacing:.16em;margin-bottom:8px}
 .player-station #vote-panel.hidden:after{content:'Waiting for the host to open voting.';display:block;color:var(--muted);font-size:13px}
+body.player-station[data-phase="VOTING_CLOSED"] #vote-panel.hidden:before{content:'VOTING CLOSED'}
+body.player-station[data-phase="VOTING_CLOSED"] #vote-panel.hidden:after{content:'The ballots are sealed. Waiting for the host to reveal the result.'}
+body.player-station[data-phase="COMPLETED"] #vote-panel.hidden:before{content:'CASE CLOSED'}
+body.player-station[data-phase="COMPLETED"] #vote-panel.hidden:after{content:'The host has completed the mystery. Keep your character card private.'}
 .player-station #vote-panel:not(.hidden){animation:reveal .45s ease both;scroll-margin-top:22px}
 .assignment-loading{position:relative;overflow:hidden}
 .assignment-loading:after{content:'';position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,#ffffff22,transparent);animation:assignment-shimmer 1.1s infinite}

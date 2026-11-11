@@ -40,7 +40,11 @@
   if(window.TITANX_HOST_PORTAL||window.TITANX_PRESENTATION)return;
   var card=document.getElementById('character-card'), body=document.body;
   if(!card||!body||!window.MutationObserver)return;
-  var sync=function(){body.classList.toggle('player-station',!card.classList.contains('hidden'));};
+  var sync=function(){body.classList.toggle('player-station',!card.classList.contains('hidden'));var phase=document.getElementById('phase-label');if(phase)body.dataset.phase=String(phase.textContent||'').replace(/ /g,'_');};
   sync();
   new MutationObserver(sync).observe(card,{attributes:true,attributeFilter:['class']});
+  var panel=document.getElementById('vote-panel'), remembered='';
+  try{remembered=sessionStorage.getItem('titanx-vote-submitted')||'';}catch(e){}
+  function restoreVote(){if(!panel||panel.classList.contains('hidden'))return;var heading=panel.querySelector('h3'),submit=panel.querySelector('#vote-submit'),statusEl=panel.querySelector('#vote-status');if(!heading||!submit)return;if(remembered&&remembered===heading.textContent){submit.disabled=true;if(statusEl)statusEl.textContent='Your vote has been recorded. '+(panel.textContent.indexOf('may change')>=0?'You may submit a new choice before voting closes.':'');}}
+  if(panel&&window.MutationObserver){new MutationObserver(function(){restoreVote();var statusEl=panel.querySelector('#vote-status'),heading=panel.querySelector('h3');if(statusEl&&heading&&/sealed|recorded/i.test(statusEl.textContent||'')){remembered=heading.textContent;try{sessionStorage.setItem('titanx-vote-submitted',remembered);}catch(e){}}}).observe(panel,{childList:true,subtree:true,characterData:true});}
 })();
