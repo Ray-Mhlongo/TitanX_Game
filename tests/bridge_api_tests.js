@@ -5,7 +5,7 @@ const api=fs.readFileSync('assets/js/api.js','utf8');
 const allowlist=code.match(/function bridgeMethods_\(\)\s*\{([\s\S]*?)\n\}/)[1];
 let checks=0;
 function check(condition,message){if(!condition){console.error('FAIL '+message);process.exitCode=1;}else{checks++;console.log('PASS '+message);}}
-const methods=['getPublicGameState','registerPlayer','submitVote','getPresentationState','hostLogin','getHostDashboardState','logoutHost','hostVotingAction','transitionGame','releaseNextClue','createGame','hostSetSettings','revokePlayer'];
+const methods=['getPublicGameState','registerPlayer','submitVote','getPresentationState','hostLogin','getHostDashboardState','logoutHost','hostVotingAction','transitionGame','releaseNextClue','createGame','hostSetSettings','revokePlayer','hostPresentationMedia'];
 for(const method of methods)check(new RegExp('\\b'+method+':'+method+'\\b').test(allowlist),'bridge allows required method '+method);
 check(!/google\.script\.run/.test(api),'static client has no direct Apps Script runtime dependency');
 check(code.includes("Object.prototype.hasOwnProperty.call(methods,request.method)"),'server dispatch enforces own-property allowlist');

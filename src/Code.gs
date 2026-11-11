@@ -55,7 +55,8 @@ function bridgeMethods_() {
     getPublicGameState:getPublicGameState,registerPlayer:registerPlayer,submitVote:submitVote,
     getPresentationState:getPresentationState,hostLogin:hostLogin,getHostDashboardState:getHostDashboardState,
     logoutHost:logoutHost,hostVotingAction:hostVotingAction,transitionGame:transitionGame,
-    releaseNextClue:releaseNextClue,createGame:createGame,hostSetSettings:hostSetSettings,revokePlayer:revokePlayer
+    releaseNextClue:releaseNextClue,createGame:createGame,hostSetSettings:hostSetSettings,revokePlayer:revokePlayer,
+    hostPresentationMedia:hostPresentationMedia
   };
 }
 function bridgeResponse_(payload) {

@@ -102,6 +102,20 @@
     var s = Math.max(0, Math.floor(seconds));
     return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
   }
+  var playbackSequence=0,videoEl=$('intro-video'),musicEl=$('intro-music');
+  var mediaManifest={intro:{video:'',music:''}};
+  function syncPlayback(playback){
+    if(!playback||Number(playback.sequence||0)<=playbackSequence)return;
+    playbackSequence=Number(playback.sequence||0);
+    var intro=$('cinematic-intro');if(!videoEl||!musicEl)return;
+    if(mediaManifest[playback.mediaId]&&mediaManifest[playback.mediaId].video)videoEl.src=mediaManifest[playback.mediaId].video;
+    if(mediaManifest[playback.mediaId]&&mediaManifest[playback.mediaId].music)musicEl.src=mediaManifest[playback.mediaId].music;
+    videoEl.volume=Number(playback.videoVolume||0);musicEl.volume=Number(playback.musicVolume||0);videoEl.muted=!!playback.muted;musicEl.muted=!!playback.muted;
+    if(playback.videoStatus==='stopped'){videoEl.pause();videoEl.currentTime=0;intro.classList.add('hidden');}
+    else {intro.classList.remove('hidden');if(Number.isFinite(Number(playback.videoPosition))&&Math.abs(videoEl.currentTime-Number(playback.videoPosition))>2)try{videoEl.currentTime=Number(playback.videoPosition);}catch(e){};var promise=playback.videoStatus==='playing'?videoEl.play():Promise.resolve();if(promise&&promise.catch)promise.catch(function(){$('intro-error').textContent='Presentation browser blocked playback. Click the presentation once, then ask the host to retry.';});}
+    if(playback.musicStatus==='stopped'){musicEl.pause();musicEl.currentTime=0;}else if(playback.musicStatus==='playing'){var mp=musicEl.play();if(mp&&mp.catch)mp.catch(function(){});}else{musicEl.pause();}
+    if($('intro-status'))$('intro-status').textContent=playback.videoStatus==='paused'?'INTRODUCTION PAUSED':playback.videoStatus==='playing'?'INTRODUCTION PLAYING':'TITANX AFTER DARK';
+  }
   function updateClock() {
     if (!lastState) return;
     var d = lastState, remaining, total = Math.max(1, Number(d.durationSeconds || 180));
@@ -177,6 +191,7 @@
   function render(data) {
     if (!data || !data.ok) return;
     var d = data.data;
+    syncPlayback(d.playback);
     announceChanges(lastState, d);
     lastState = d;
     $('show-phase-label').textContent = String(d.phase || 'LOBBY').replace(/_/g, ' ');
