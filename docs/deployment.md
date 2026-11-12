@@ -16,7 +16,7 @@ The intended Pages routes, after an authorized publish and browser test, are:
 - Host: https://ray-mhlongo.github.io/TitanX_Game/host.html
 - Presentation: https://ray-mhlongo.github.io/TitanX_Game/presentation.html
 
-GitHub was not pushed. The prior automated rejection remains in effect, so the Pages frontend is local only. Do not give participants the Pages routes until they are published and browser-to-bridge communication has been verified. The Sheet remains private, server access still executes as the owner, and the bridge ticket secret is generated into Script Properties without being placed in source or logs.
+GitHub Pages is published from `main`. The Sheet remains private, server access still executes as the owner, and the bridge ticket secret is generated into Script Properties without being placed in source or logs.
 
 ## API and privacy checks
 
@@ -26,10 +26,9 @@ The HTTP request exercised presentation state only. It did not register a player
 
 ## Release sequence
 
-1. Confirm GitHub Pages publishes the root of the main branch. The static files are already arranged for the repository subpath /TitanX_Game/ and use relative asset paths.
-2. Synchronize the contents of src/ to the existing Script ID, review the Apps Script editor contents, and publish a new version on the existing web app deployment. Keep owner execution and anonymous access as currently configured.
-3. Verify that the deployed /exec?bridge=1 endpoint loads inside a page at https://ray-mhlongo.github.io/TitanX_Game/ and that it rejects other origins and page paths. Then verify participant registration, host login/actions, and presentation polling.
-4. Publish the local static files to the repository root only after the Apps Script bridge is live and tested. The GitHub push restriction remains in effect; no push was attempted in this change.
-5. After both releases succeed, participants use https://ray-mhlongo.github.io/TitanX_Game/, the host uses https://ray-mhlongo.github.io/TitanX_Game/host.html, and Meet uses https://ray-mhlongo.github.io/TitanX_Game/presentation.html. Until then, use the current Apps Script participant link from the prior section.
+1. GitHub Pages publishes the root of `main`; all static paths are relative to `/TitanX_Game/`.
+2. Apps Script deployment version 17 is live on the existing deployment ID and keeps owner execution and anonymous bridge access.
+3. The bridge route was verified over HTTPS from the published origin.
+4. Participants use https://ray-mhlongo.github.io/TitanX_Game/, the host uses https://ray-mhlongo.github.io/TitanX_Game/host.html, and Meet uses https://ray-mhlongo.github.io/TitanX_Game/presentation.html.
 
-The local environment did not have clasp installed, and its attempted HTTPS check could not establish a connection. Therefore the remote Apps Script contents, bridge route, final deployment version, and live UI behavior were not verified or changed in this turn. The project was not deployed to Apps Script or GitHub.
+Automated tests pass. HTTP checks verified the published participant and host pages, character assets, and bridge ticket route. A real authenticated host session and multi-browser registration/voting run still require a browser session and are not claimed here.

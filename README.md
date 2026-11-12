@@ -100,11 +100,11 @@ The local suite covers game rules, database setup, host authentication and prese
 
 ## GitHub workflow
 
-For a future authorized release, publish only source and documentation; never publish credentials, `.clasp.json`, `.clasprc.json`, host secrets, spreadsheet IDs or user data. Synchronize Apps Script separately and publish a versioned web app deployment. GitHub was not pushed for this migration.
+The production release is published from `main`. Never publish credentials, `.clasp.json`, `.clasprc.json`, host secrets, spreadsheet IDs or user data. Apps Script is synchronized separately and deployed as a versioned web app.
 
 ## Voting and elimination
 
-After both staged releases have been published, the Pages root URL is the participant link. Players register with a display name and choose Male or Female for the pumpkin avatar; the server assigns an unused fictional character under a script lock. The avatar preference only selects local pumpkin artwork. A random browser token recovers the player's existing character after refresh; Sheets stores only its digest.
+The Pages root URL is the participant link. Players register with only a display name; the server assigns an unused fictional character under a script lock. A random browser token recovers the player's existing character after refresh; Sheets stores only its digest. Capacity is authoritative at 13 participants.
 
 The host opens voting from the dashboard and chooses 30, 60, 90, 120 seconds, or a custom 10â€“600 second duration. Auto close is enabled by default. When disabled, an expired timer leaves the poll open until the host closes or extends it. The backend checks the deadline on ballot submission. Players choose an active suspect card and can change their ballot only when the host setting permits it. The host sees participation counts while voting is open; individual selections are never returned.
 
