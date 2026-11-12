@@ -44,6 +44,7 @@ footer{border-top-color:#fe772d3d}
 .player-station #join{display:block;margin:0;padding:28px 0;min-height:100vh}
 .player-station .join-panel{max-width:760px;margin:0 auto;padding:0;background:transparent;border:0;box-shadow:none}
 .player-station .character-card{margin-top:0}
+.player-station .character-card{display:grid;gap:14px;padding:18px;background:#13070a;border:1px solid #9d1728;box-shadow:0 0 0 1px #37060d,inset 0 0 45px #4a071833}.character-portrait,.murderer-portrait{display:block;width:100%;max-width:620px;margin:0 auto;border:1px solid #c72338;box-shadow:0 12px 30px #000}.character-portrait{border-radius:8px}.murderer-portrait{border-radius:8px;margin-top:8px}.player-station .character-card .secret-block{display:none}
 .player-station #vote-panel.hidden{display:block!important;min-height:110px;border-color:#fe772d66}
 .player-station #vote-panel.hidden:before{content:'INVESTIGATION IN PROGRESS';display:block;color:#ffc27e;font:11px 'DM Mono',monospace;letter-spacing:.16em;margin-bottom:8px}
 .player-station #vote-panel.hidden:after{content:'Waiting for the host to open voting.';display:block;color:var(--muted);font-size:13px}

@@ -1,5 +1,6 @@
 (function () {
   'use strict';
+  if (window.TITANX_SIMPLIFIED) return;
   var isHost=!!window.TITANX_HOST_PORTAL, playerKey='titanx-player-token', hostKey='titanx-host-session';
   var playerToken=isHost?'':(localStorage.getItem(playerKey)||''), hostToken=isHost?(sessionStorage.getItem(hostKey)||''):'';
   var latest=null, cardKey='', evidenceKey='', suspectKey='', voteKey='', pollFailures=0;
@@ -47,8 +48,9 @@
 (function(){
   if(window.TITANX_HOST_PORTAL||window.TITANX_PRESENTATION)return;
   var card=document.getElementById('character-card'), body=document.body;
+  var portraits={'Vesper Vale':'Vesper Vale','Mina Moonwort':'Mina Moonwort','Gideon Gloom':'Gideon Gloom','Rory Redfang':'Rory Redfang','Dr. Patchwork':'Dr. Patchwork','Madame Morrow':'Madame Morrow','Calder Creak':'Calder Creak','The Masquerade':'The Masquerade','Pip Pennyroyal':'Pip Pennyroyal','Detective Dusk':'Detective Dusk','Basil Bones':'Basil Bones','Fern Fallow':'Fern Fallow','Nocturne Nix':'Nocturne Nix','Cora Crumb':'Cora Crumb','Iris Inkblot':'Iris Inkblot','Sol Seedling':'Sol Seedling','Jinx Jamboree':'Jinx Jamboree','Opal Omen':'Opal Omen','Marcel Mumm':'Marcel Mumm','Sable Song':'Sable Song','Grimble Granite':'Grimble Granite','Tansy Tuck':'Tansy Tuck','Cipher Cinder':'Cipher Cinder','Bramble Buzz':'Bramble Buzz','Tolliver Tock':'Tolliver Tock','Velvet String':'Velvet String','Quill Quirk':'Quill Quirk','Ash Ember':'Ash Ember','Tick Tallow':'Tick Tallow','Rook Nightjar':'Rook Nightjar','Luna Lumen':'Luna Lumen'};
   if(!card||!body||!window.MutationObserver)return;
-  var sync=function(){body.classList.toggle('player-station',!card.classList.contains('hidden'));var phase=document.getElementById('phase-label');if(phase)body.dataset.phase=String(phase.textContent||'').replace(/ /g,'_');};
+  var sync=function(){body.classList.toggle('player-station',!card.classList.contains('hidden'));var phase=document.getElementById('phase-label');if(phase)body.dataset.phase=String(phase.textContent||'').replace(/ /g,'_');var title=card.querySelector('h3');if(title&&!card.querySelector('.character-portrait')){var key=String(title.textContent||'').split(',')[0],file=portraits[key];if(file){var img=document.createElement('img');img.className='character-portrait';img.src='assets/characters-web/'+encodeURIComponent(file)+'.webp';img.alt=key+' character card';img.decoding='async';img.fetchPriority='high';card.insertBefore(img,card.firstChild);}}if(card.querySelector('.murderer-role')&&!card.querySelector('.murderer-portrait')){var role=document.createElement('img');role.className='murderer-portrait';role.src='assets/characters-web/Secret%20Murderer%20Role.webp';role.alt='Confidential murderer role card';role.loading='lazy';card.appendChild(role);}};
   sync();
   new MutationObserver(sync).observe(card,{attributes:true,attributeFilter:['class']});
   var panel=document.getElementById('vote-panel'), remembered='';
