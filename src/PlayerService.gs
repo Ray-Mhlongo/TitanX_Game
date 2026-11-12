@@ -1,20 +1,19 @@
 function registerPlayer(displayName, gender, existingToken) {
   try {
     var name=String(displayName||'').trim().replace(/\s+/g,' ');
-    // Gender is no longer collected by the simplified participant flow.
-    // Keep a neutral value for the legacy sheet column and avatar fallback.
-    gender='Neutral';
+    gender=gender==='Male'||gender==='Female'?gender:'';
     if(name.length<2||name.length>32) return {ok:false,error:'Enter a name between 2 and 32 characters.'};
     var lock=LockService.getScriptLock(); lock.waitLock(20000);
     try {
       var state=JSON.parse(settingGet_('state')||'{}');
       var players=rows_('Players'), tokenHash=existingToken?digest_(existingToken):'';
       if(tokenHash){var returning=players.filter(function(p){return p.tokenHash===tokenHash&&p.gameId===state.gameId&&['ACTIVE','ELIMINATED'].indexOf(p.status)>=0;})[0]; if(returning){returning.lastSeenAt=now_();rewriteRows_('Players',players);return {ok:true,token:existingToken,character:characterCard_(returning,state)};}}
+      if(!gender)return {ok:false,error:'Select Male or Female to continue.'};
       if(state.phase!=='LOBBY'||!state.registrationOpen) return {ok:false,error:'Registration is closed for this game.'};
       if(players.some(function(p){return p.gameId===state.gameId&&isActivePlayer_(p)&&p.displayName.toLowerCase()===name.toLowerCase();})) return {ok:false,error:'That name is already in the room. Choose another display name.'};
       var limit=Number(settingGet_('playerLimit')||CONFIG.DEFAULT_MAX_PLAYERS), active=players.filter(function(p){return p.gameId===state.gameId&&isActivePlayer_(p);});
       if(active.length>=limit) return {ok:false,error:'The game is full. Ask the host whether another seat is available.'};
-      var assigned=active.map(function(p){return p.characterId;}), available=CHARACTERS.filter(function(c){return assigned.indexOf(c.id)<0;});
+      var assigned=active.map(function(p){return p.characterId;}), available=CHARACTERS.filter(function(c){return assigned.indexOf(c.id)<0&&characterGender_(c)===gender;});
       if(!available.length) return {ok:false,error:'All character cards have been assigned.'};
       var character=available[Math.floor(Math.random()*available.length)], token=randomToken_(), player={playerId:randomToken_().slice(0,24),displayName:name,gender:gender,avatarId:avatarIdForGender_(gender),tokenHash:digest_(token),characterId:character.id,joinedAt:now_(),lastSeenAt:now_(),status:'ACTIVE',gameId:state.gameId};
       appendObject_('Players',player); setCharacterAssignment_(character.id,state.gameId); log_(state.gameId,'player_joined','A player joined the lobby.');

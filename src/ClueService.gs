@@ -4,7 +4,7 @@ function cluesForKiller_(killerId) {
 function publicState_(state,player) {
   var evidence=rows_('Evidence').filter(function(e){return e.gameId===state.gameId&&String(e.released)==='true';}).sort(function(a,b){return Number(a.releaseOrder)-Number(b.releaseOrder);}).map(function(e){return {id:e.clueId,round:Number(e.round),title:e.title,description:e.description};});
   var players=rows_('Players').filter(function(p){return p.gameId===state.gameId&&['ACTIVE','ELIMINATED'].indexOf(p.status)>=0;});
-  var chars=players.map(function(p){var c=CHARACTERS.filter(function(x){return x.id===p.characterId;})[0];return c?{id:c.id,name:c.name,description:c.description,mark:CHARACTER_MARKS[c.id],avatarId:p.avatarId||avatarIdForGender_(p.gender),status:p.status}:null;}).filter(Boolean);
+  var chars=players.map(function(p){var c=CHARACTERS.filter(function(x){return x.id===p.characterId;})[0];return c?{id:c.id,name:c.name,description:c.description,mark:CHARACTER_MARKS[c.id],avatarId:p.avatarId||avatarIdForGender_(p.gender),status:p.status,playerName:p.displayName}:null;}).filter(Boolean);
   var activeCount=players.filter(isActivePlayer_).length;
   var eliminated=CHARACTERS.filter(function(c){return c.id===state.eliminationAnnouncement;})[0];
   var votes=rows_('Votes').filter(function(v){return v.gameId===state.gameId&&String(v.roundId)===String(state.votingRound||1);});

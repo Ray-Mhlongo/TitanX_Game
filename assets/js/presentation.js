@@ -1,5 +1,6 @@
 (function () {
   'use strict';
+  var theme=document.createElement('link');theme.rel='stylesheet';theme.href='assets/css/titanx-theme.css';document.head.appendChild(theme);
   var lastState = null;
   var pollFailures = 0;
   var pollBusy = false;
@@ -57,7 +58,7 @@
     if (!ordered.length) { list.innerHTML = '<div class="show-empty">Awaiting investigators</div>'; return; }
     list.innerHTML = ordered.map(function (c) {
       var icon = c.avatarId === 'pumpkin-female' ? '✦' : c.avatarId === 'pumpkin-male' ? '◈' : '✧';
-      return '<article class="show-person ' + (c.status === 'ELIMINATED' ? 'eliminated' : '') + '"><span class="profile-avatar ' + esc(c.avatarId || 'pumpkin-neutral') + '" aria-hidden="true">' + icon + '</span><div><b>' + esc(c.name) + '</b><small>' + esc(c.description || c.role || 'Investigator') + '</small></div><span class="person-state">' + esc(c.status || 'ACTIVE') + '</span></article>';
+      return '<article class="show-person ' + (c.status === 'ELIMINATED' ? 'eliminated' : '') + '"><span class="profile-avatar ' + esc(c.avatarId || 'pumpkin-neutral') + '" aria-hidden="true">' + icon + '</span><div><b>' + esc(c.name) + '</b><small class="participant-name">' + esc(c.playerName || 'Investigator') + '</small><small>' + esc(c.description || c.role || 'Investigator') + '</small></div><span class="person-state">' + esc(c.status || 'ACTIVE') + '</span></article>';
     }).join('');
   }
   function renderClues(data) {

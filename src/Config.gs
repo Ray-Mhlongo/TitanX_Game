@@ -16,3 +16,5 @@ var CONFIG = {
     GameHistory: ['gameId', 'completedAt', 'actualCulprit', 'winningAccusation', 'voteTotals', 'correctAccusation']
   }
 };
+var CHARACTER_GENDER_MAP={vampire:'Female',witch:'Female',ghost:'Male',werewolf:'Male',scientist:'Male',fortune:'Female',caretaker:'Male',masked:'Female',potion:'Male',detective:'Male',butler:'Male',gravekeeper:'Female',pianist:'Female',baker:'Female',artist:'Female',guardian:'Male',jester:'Male',oracle:'Female',mummy:'Male',siren:'Female',gargoyle:'Male',taxidermist:'Female',cryptographer:'Male',beekeeper:'Female',bellringer:'Male',puppeteer:'Female',librarian:'Female',chimney:'Male',clockmaker:'Male',ravenkeeper:'Male',stargazer:'Female'};
+function characterGender_(character){return CHARACTER_GENDER_MAP[character.id]||'Female';}
