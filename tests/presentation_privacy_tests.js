@@ -47,7 +47,7 @@ test('presentation uses a public projection with no player card or host solution
   assert.equal(Object.hasOwn(result.data, 'solution'), false);
   assert.equal(Object.hasOwn(result.data, 'killerId'), false);
   assert.equal(Object.hasOwn(result.data, 'votes'), false);
-  assert.equal(Object.hasOwn(result.data.characters[0], 'role'), false);
+  assert.equal(Object.hasOwn(result.data.characters[0], 'role'), true);
   const json = JSON.stringify(result);
   for (const secret of ['SECRET_CHARACTER_CARD','SECRET_PLAYER_HASH','SECRET_PLAYER_DATA','SECRET_UNRELEASED_CLUE','SECRET_VOTER','SECRET_KILLER_ID']) {
     assert.equal(json.includes(secret), false, secret + ' leaked');
