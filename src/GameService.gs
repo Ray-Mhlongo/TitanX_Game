@@ -3,7 +3,7 @@ function createGame(hostToken, maxPlayers) {
     requireHost_(hostToken); var lock=LockService.getScriptLock();lock.waitLock(20000);
     try {
       var limit=Number(maxPlayers||settingGet_('playerLimit')||CONFIG.DEFAULT_MAX_PLAYERS);
-      if(limit<CONFIG.MIN_PLAYERS||limit>CHARACTERS.length)return {ok:false,error:'Choose a player limit from 4 to '+CHARACTERS.length+'.'};
+      if(limit<CONFIG.MIN_PLAYERS||limit>CHARACTERS.length)return {ok:false,error:'Choose a player limit from '+CONFIG.MIN_PLAYERS+' to '+CHARACTERS.length+'.'};
       var previous=JSON.parse(settingGet_('state')||'{}');
       if(previous.gameId&&previous.phase==='COMPLETED') saveHistory_(previous);
       var id=randomToken_().slice(0,16), state=defaultState_();state.gameId=id;
@@ -52,7 +52,7 @@ function releaseNextClue(hostToken) {
 }
 function hostSetSettings(hostToken, settings) {
   try {requireHost_(hostToken);var lock=LockService.getScriptLock();lock.waitLock(20000);try{var state=JSON.parse(settingGet_('state')||'{}');if(state.phase!=='LOBBY')return {ok:false,error:'These settings can only change in the lobby.'};
-    if(settings.playerLimit!==undefined){var n=Number(settings.playerLimit);if(n<CONFIG.MIN_PLAYERS||n>CHARACTERS.length)return {ok:false,error:'Player limit must be 4–'+CHARACTERS.length+'.'};settingSet_('playerLimit',String(n));}
+    if(settings.playerLimit!==undefined){var n=Number(settings.playerLimit);if(n<CONFIG.MIN_PLAYERS||n>CHARACTERS.length)return {ok:false,error:'Player limit must be '+CONFIG.MIN_PLAYERS+'–'+CHARACTERS.length+'.'};settingSet_('playerLimit',String(n));}
     if(settings.allowVoteChanges!==undefined)settingSet_('allowVoteChanges',settings.allowVoteChanges?'true':'false');
     if(settings.registrationOpen!==undefined)state.registrationOpen=!!settings.registrationOpen;
     if(settings.durationSeconds!==undefined){var d=Number(settings.durationSeconds);if(d<60||d>3600)return {ok:false,error:'Timer must be between 1 and 60 minutes.'};state.durationSeconds=d;}
