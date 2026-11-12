@@ -1,7 +1,7 @@
 # TitanX introduction media
 
-Place browser-compatible introduction media in this directory when ready, then set the URLs in `assets/js/presentation.js` inside `mediaManifest`.
+The production introduction is `intro.mp4`. Its public URL is wired in `assets/js/presentation.js` through `mediaManifest`.
 
-Recommended formats are MP4 (H.264/AAC) for video and MP3 or OGG for music. Keep files reasonably sized for Google Meet playback. Media is optional: the host controls remain available and the presentation reports a clear playback error when no media URL is configured.
+Use MP4 (H.264/AAC) for video and MP3 or OGG for an optional independent music track. Keep files reasonably sized for Google Meet playback. The supplied MP4 contains its own audio, so the game does not require a separate music file.
 
 Do not put host secrets, spreadsheet credentials, OAuth files, or private game data in this directory.

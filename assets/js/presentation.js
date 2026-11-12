@@ -103,7 +103,7 @@
     return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
   }
   var playbackSequence=0,videoEl=$('intro-video'),musicEl=$('intro-music');
-  var mediaManifest={intro:{video:'',music:''}};
+  var mediaManifest={intro:{video:'assets/media/intro.mp4',music:''}};
   function syncPlayback(playback){
     if(!playback||Number(playback.sequence||0)<=playbackSequence)return;
     playbackSequence=Number(playback.sequence||0);
@@ -116,6 +116,7 @@
     if(playback.musicStatus==='stopped'){musicEl.pause();musicEl.currentTime=0;}else if(playback.musicStatus==='playing'){var mp=musicEl.play();if(mp&&mp.catch)mp.catch(function(){});}else{musicEl.pause();}
     if($('intro-status'))$('intro-status').textContent=playback.videoStatus==='paused'?'INTRODUCTION PAUSED':playback.videoStatus==='playing'?'INTRODUCTION PLAYING':'TITANX AFTER DARK';
   }
+  if(videoEl){videoEl.addEventListener('loadedmetadata',function(){if($('intro-status'))$('intro-status').textContent='INTRODUCTION READY';});videoEl.addEventListener('error',function(){$('intro-error').textContent='The introduction video could not be loaded. Check the published media path.';});}
   function updateClock() {
     if (!lastState) return;
     var d = lastState, remaining, total = Math.max(1, Number(d.durationSeconds || 180));
