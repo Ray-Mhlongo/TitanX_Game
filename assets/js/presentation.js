@@ -111,12 +111,13 @@
     if(mediaManifest[playback.mediaId]&&mediaManifest[playback.mediaId].video)videoEl.src=mediaManifest[playback.mediaId].video;
     if(mediaManifest[playback.mediaId]&&mediaManifest[playback.mediaId].music)musicEl.src=mediaManifest[playback.mediaId].music;
     videoEl.volume=Number(playback.videoVolume||0);musicEl.volume=Number(playback.musicVolume||0);videoEl.muted=!!playback.muted;musicEl.muted=!!playback.muted;
+    document.body.classList.toggle('intro-active',playback.videoStatus!=='stopped');
     if(playback.videoStatus==='stopped'){videoEl.pause();videoEl.currentTime=0;intro.classList.add('hidden');}
     else {intro.classList.remove('hidden');if(Number.isFinite(Number(playback.videoPosition))&&Math.abs(videoEl.currentTime-Number(playback.videoPosition))>2)try{videoEl.currentTime=Number(playback.videoPosition);}catch(e){};var promise=playback.videoStatus==='playing'?videoEl.play():Promise.resolve();if(promise&&promise.catch)promise.catch(function(){$('intro-error').textContent='Presentation browser blocked playback. Click the presentation once, then ask the host to retry.';});}
     if(playback.musicStatus==='stopped'){musicEl.pause();musicEl.currentTime=0;}else if(playback.musicStatus==='playing'){var mp=musicEl.play();if(mp&&mp.catch)mp.catch(function(){});}else{musicEl.pause();}
     if($('intro-status'))$('intro-status').textContent=playback.videoStatus==='paused'?'INTRODUCTION PAUSED':playback.videoStatus==='playing'?'INTRODUCTION PLAYING':'TITANX AFTER DARK';
   }
-  if(videoEl){videoEl.addEventListener('loadedmetadata',function(){if($('intro-status'))$('intro-status').textContent='INTRODUCTION READY';});videoEl.addEventListener('error',function(){$('intro-error').textContent='The introduction video could not be loaded. Check the published media path.';});}
+  if(videoEl){videoEl.addEventListener('loadedmetadata',function(){if($('intro-status'))$('intro-status').textContent='INTRODUCTION READY';});videoEl.addEventListener('error',function(){$('intro-error').textContent='The introduction video could not be loaded. Check the published media path.';});videoEl.addEventListener('ended',function(){document.body.classList.remove('intro-active');$('cinematic-intro').classList.add('hidden');});}
   function updateClock() {
     if (!lastState) return;
     var d = lastState, remaining, total = Math.max(1, Number(d.durationSeconds || 180));
