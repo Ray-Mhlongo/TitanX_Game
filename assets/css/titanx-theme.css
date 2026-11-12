@@ -2,3 +2,7 @@ body.titanx-simple{background:#090609 url('../template/titanx-interface-bg.png')
 .titanx-simple .panel,.titanx-simple .character-card,.titanx-simple .vote-panel{background:rgba(12,5,8,.9);border-color:#8d302d;box-shadow:0 20px 70px rgba(0,0,0,.45)}
 .titanx-simple select{padding:13px;border:1px solid #71302d;background:#120a0c;color:#fff;border-radius:4px}
 .participant-name{color:#ffb27b!important;font-weight:700;letter-spacing:.05em}
+#join:not(.hidden) #join-form{display:grid!important;visibility:visible!important;opacity:1!important}
+#join.hidden{display:none!important}
+.host-dashboard .button:disabled{opacity:.35;filter:grayscale(.7);cursor:not-allowed}
+.host-dashboard:before{content:'JACK THE PUMPKIN · LIVE CASE';display:block;color:#ffb27b;font:600 11px Cinzel,serif;letter-spacing:.16em}
