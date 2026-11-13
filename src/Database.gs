@@ -46,7 +46,7 @@ function initialiseDatabase_(ss) {
   var settings = ss.getSheetByName('Settings');
   if (!settingGet_('state')) settingSet_('state', JSON.stringify(defaultState_()));
   if (!settingGet_('playerLimit')) settingSet_('playerLimit', String(CONFIG.DEFAULT_MAX_PLAYERS));
-  if (!settingGet_('allowVoteChanges')) settingSet_('allowVoteChanges', 'true');
+  if (!settingGet_('allowVoteChanges')) settingSet_('allowVoteChanges', 'false');
   seedCharacters_();
   return 'Database ready: ' + ss.getName();
 }

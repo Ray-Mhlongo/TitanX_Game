@@ -6,7 +6,7 @@ function submitVote(playerToken,suspectId) {
     var roundId=String(state.votingRound||1),votes=rows_('Votes'),existing=player?votes.filter(function(v){return v.gameId===state.gameId&&String(v.roundId)===roundId&&v.playerId===player.playerId;})[0]:null;
     var eligible=players.filter(function(p){return p.gameId===state.gameId&&isActivePlayer_(p);}).map(function(p){return {id:p.characterId};});
     if(state.runoffCharacterIds&&state.runoffCharacterIds.length)eligible=eligible.filter(function(c){return state.runoffCharacterIds.indexOf(c.id)>=0;});
-    var decision=GameLogic.voteDecision(state.phase,player,suspectId,eligible,existing,settingGet_('allowVoteChanges')==='true');if(decision)return {ok:false,error:decision};
+    var decision=GameLogic.voteDecision(state.phase,player,suspectId,eligible,existing,false);if(decision)return {ok:false,error:decision};
     var target=players.filter(function(p){return p.gameId===state.gameId&&isActivePlayer_(p)&&p.characterId===suspectId;})[0];if(!target)return {ok:false,error:'That suspect is no longer eligible.'};
     var stamp=now_();if(existing){existing.suspectId=suspectId;existing.targetPlayerId=target.playerId;existing.lastUpdatedAt=stamp;rewriteRows_('Votes',votes);}else appendObject_('Votes',{gameId:state.gameId,roundId:roundId,playerId:player.playerId,targetPlayerId:target.playerId,suspectId:suspectId,submittedAt:stamp,lastUpdatedAt:stamp});
     return {ok:true,message:'Your vote is sealed.'};
